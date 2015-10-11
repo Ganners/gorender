@@ -1,14 +1,14 @@
 GoRender: A software rendering experiment in Go
 ===============================================
 
-GoRender is a software renderer for Go. It is an experiment to put together a
-neat API and glue together what I have learnt about graphics programming over
+GoRender is a 3D software renderer for Go. It is an experiment to put together
+a neat API and glue together what I have learnt about graphics programming over
 the years.
 
-I'd like it to use as much textbook notation as possible, which is possibly in
-Go due to the magic of UTF8. I'd also like this to be fully self-sufficient in
-that it should not use any external libraries though should hopefully make it
-possible to compose them in future.
+I'd like it to use as much textbook notation as possible, which is possible in
+Go due to UTF8 magic. I'd also like this to be fully self-sufficient in that it
+will not use any external libraries - though should hopefully make it possible
+to compose them in future.
 
 To Do
 -----
