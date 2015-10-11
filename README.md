@@ -15,7 +15,8 @@ To Do
 
 ### Pre-requisites
 
- + [ ] Decide on SDL2 binding for Go
+ + [x] Decide on SDL2 binding for Go
+ + [x] Create drawable backbuffer and test example
 
 ### Primitives
 
