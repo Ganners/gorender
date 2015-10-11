@@ -1,6 +1,10 @@
 package backbuffer
 
-import "errors"
+import (
+	"errors"
+
+	"github.com/Ganners/gorender/utils"
+)
 
 // Stores all the necessary information for drawing pixels
 type Backbuffer struct {
@@ -33,11 +37,13 @@ func (bb *Backbuffer) DrawPixel(x, y int, color uint32) error {
 		return errors.New("Pixel exceeds backbuffer, cannot set")
 	}
 
+	r, g, b, a := utils.ColorToRGBABytes(color)
+
 	// Blue, Green, Red, Alpha
-	bb.pixels[pos] = byte(uint8(color))
-	bb.pixels[pos+1] = byte(uint8(color >> 8))
-	bb.pixels[pos+2] = byte(uint8(color >> 16))
-	bb.pixels[pos+3] = byte(uint8(color >> 24))
+	bb.pixels[pos] = b
+	bb.pixels[pos+1] = g
+	bb.pixels[pos+2] = r
+	bb.pixels[pos+3] = a
 
 	return nil
 }
@@ -45,10 +51,7 @@ func (bb *Backbuffer) DrawPixel(x, y int, color uint32) error {
 // Fills the backbuffer with a particular color. Color is 0xAARRGGBB
 func (bb *Backbuffer) Fill(color uint32) {
 
-	b := byte(uint8(color))
-	g := byte(uint8(color >> 8))
-	r := byte(uint8(color >> 16))
-	a := byte(uint8(color >> 24))
+	r, g, b, a := utils.ColorToRGBABytes(color)
 
 	for i := 0; i < len(bb.pixels); i += bb.bytesPerPixel {
 		bb.pixels[i] = b
