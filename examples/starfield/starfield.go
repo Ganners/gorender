@@ -2,6 +2,7 @@ package main
 
 import (
 	"math/rand"
+	"time"
 
 	"github.com/Ganners/gorender/backbuffer"
 	"github.com/Ganners/gorender/window"
@@ -15,22 +16,31 @@ func main() {
 	window.Create()
 	defer window.Destroy()
 
-	starField := NewStarField(
-		2048, window.Width, window.Height,
-		window.Backbuffer,
-		func() { window.Update() })
+	// Start starfield concurrently
+	go func() {
+		starField := NewStarField(
+			2048, window.Width, window.Height,
+			window.Backbuffer,
+			func() { window.Update() })
 
-	for {
-		starField.Update(0.03)
-	}
+		for {
+			starField.Update(0.03)
+		}
+	}()
+
+	// Launch application for 5 seconds
+	<-time.After(time.Second * 5)
 }
 
+// Vector stores our X, Y and Z coordinate values
 type Vector3D struct {
 	X float64
 	Y float64
 	Z float64
 }
 
+// Starfield is the structure for the program which handles calculation and
+// drawing, it knows how to use a backbuffer and is told how to redraw
 type StarField struct {
 	stars      []Vector3D
 	width      int
@@ -74,12 +84,12 @@ func (sf *StarField) positionAllStars() {
 // Randomly positions a star in space
 func (sf *StarField) positionStar(index int) {
 
-	randX := 2.0 * (rand.Float64() - 0.5) * 40.0
-	randY := 2.0 * (rand.Float64() - 0.5) * 40.0
+	randX := (2.0 * (rand.Float64() - 0.5)) * 40.0
+	randY := (2.0 * (rand.Float64() - 0.5)) * 40.0
 	randZ := (rand.Float64() + 0.00001) * 40.0
 
-	sf.stars[index].X = randX
-	sf.stars[index].Y = randY
+	sf.stars[index].X = randX * float64(sf.halfWidth)
+	sf.stars[index].Y = randY * float64(sf.halfHeight)
 	sf.stars[index].Z = randZ
 }
 
@@ -93,19 +103,15 @@ func (sf *StarField) Update(delta float64) {
 
 	for i := 0; i < len(sf.stars); i++ {
 
-		// Rotate X and Y slowly
-		sf.stars[i].X -= float64(sf.time) * 0.000001
-		sf.stars[i].Y -= float64(sf.time) * 0.000001
-
 		// Move Z down to zero
 		sf.stars[i].Z -= delta
 		if sf.stars[i].Z <= 0 {
 			sf.positionStar(i)
 		}
 
-		// Calculate X and Y pixel coordinates
-		x := int(sf.stars[i].X*(float64(sf.halfWidth)/sf.stars[i].Z) + float64(sf.halfWidth))
-		y := int(sf.stars[i].Y*(float64(sf.halfHeight)/sf.stars[i].Z) + float64(sf.halfHeight))
+		// Calculate X and Y pixel coordinates for perspective location
+		x := int(sf.stars[i].X/sf.stars[i].Z) + sf.halfWidth
+		y := int(sf.stars[i].Y/sf.stars[i].Z) + sf.halfHeight
 
 		if (x < 0 || x >= sf.width-1) || (y < 0 || y >= sf.height-1) {
 			// Restart if it goes off screen
