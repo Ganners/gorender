@@ -1,8 +1,8 @@
 package main
 
 import (
+	"math"
 	"math/rand"
-	"time"
 
 	"github.com/Ganners/gorender/backbuffer"
 	"github.com/Ganners/gorender/window"
@@ -20,6 +20,7 @@ func main() {
 	go func() {
 		starField := NewStarField(
 			2048, window.Width, window.Height,
+			60.0,
 			window.Backbuffer,
 			func() { window.Update() })
 
@@ -29,7 +30,8 @@ func main() {
 	}()
 
 	// Launch application for 5 seconds
-	<-time.After(time.Second * 5)
+	haltChan := make(chan struct{}, 1)
+	<-haltChan
 }
 
 // Vector stores our X, Y and Z coordinate values
@@ -50,11 +52,13 @@ type StarField struct {
 	backbuffer *backbuffer.Backbuffer
 	redraw     func()
 	time       int64
+	fov        float64
 }
 
-// Constructs a new star field
+// Constructs a new star field. Field of view should be in degrees
 func NewStarField(
 	numStars, displayWidth, displayHeight int,
+	fieldOfView float64,
 	backbuffer *backbuffer.Backbuffer,
 	redraw func()) *StarField {
 
@@ -66,6 +70,7 @@ func NewStarField(
 		halfHeight: displayHeight / 2,
 		backbuffer: backbuffer,
 		redraw:     redraw,
+		fov:        math.Tan((fieldOfView * 0.0174533) / 2),
 	}
 
 	// Position all of the stars
@@ -110,8 +115,8 @@ func (sf *StarField) Update(delta float64) {
 		}
 
 		// Calculate X and Y pixel coordinates for perspective location
-		x := int(sf.stars[i].X/sf.stars[i].Z) + sf.halfWidth
-		y := int(sf.stars[i].Y/sf.stars[i].Z) + sf.halfHeight
+		x := int(sf.stars[i].X/(sf.stars[i].Z*sf.fov)) + sf.halfWidth
+		y := int(sf.stars[i].Y/(sf.stars[i].Z*sf.fov)) + sf.halfHeight
 
 		if (x < 0 || x >= sf.width-1) || (y < 0 || y >= sf.height-1) {
 			// Restart if it goes off screen
